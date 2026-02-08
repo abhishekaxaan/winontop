@@ -1,15 +1,12 @@
 
-$iconUrl = "https://cdn-icons-png.flaticon.com/512/3524/3524335.png" # Layers/Window Icon
-$pngPath = "$PSScriptRoot\resources\logo.png"
+$pngPath = "$PSScriptRoot\resources\icon.png"
 $icoPath = "$PSScriptRoot\resources\icon.ico"
 
-# Create resources dir if not exists
-if (!(Test-Path "$PSScriptRoot\resources")) {
-    New-Item -ItemType Directory -Force -Path "$PSScriptRoot\resources"
+# Check if PNG exists
+if (!(Test-Path $pngPath)) {
+    Write-Error "Error: icon.png not found in resources folder!"
+    exit 1
 }
-
-# Download PNG
-Invoke-WebRequest -Uri $iconUrl -OutFile $pngPath
 
 # Function to convert PNG to ICO
 Add-Type -AssemblyName System.Drawing
@@ -52,4 +49,4 @@ $img.Dispose()
 $ms.Dispose()
 $bw.Dispose()
 
-Write-Host "Created icon.ico from logo.png successfully!"
+Write-Host "Successfully converted icon.png to icon.ico!"

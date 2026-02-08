@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>WinOnTop</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <!-- App Icon: Pin on Window -->
+                <div style="width: 32px; height: 32px; position: relative;">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <!-- Window frame -->
+                        <rect class="app-icon-rect-bottom" x="4" y="6" width="24" height="20" rx="2" stroke-width="2"
+                            stroke="currentColor" fill="none" />
+                        <!-- Window title bar -->
+                        <line x1="4" y1="11" x2="28" y2="11" stroke="currentColor" stroke-width="2"
+                            class="app-icon-rect-bottom" />
+                        <!-- Pin/Thumbtack -->
+                        <circle class="app-icon-rect-top" cx="23" cy="9" r="4" />
+                        <rect class="app-icon-rect-top" x="22" y="12" width="2" height="4" />
+                    </svg>
+                </div>
+                <h1>WinOnTop</h1>
+                <div class="view-controls" style="margin-left: 12px;">
+                    <button id="view-grid" class="icon-btn active" title="Grid View">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </button>
+                    <button id="view-list" class="icon-btn" title="List View">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Settings Icon -->
+            <button class="icon-btn" id="settings-btn" title="Settings">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal-overlay hidden">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button id="close-settings" class="icon-btn">✕</button>
+                </div>
+                <div class="modal-content">
+                    <div class="setting-row">
+                        <span>Run on Startup</span>
+                        <label class="switch">
+                            <input type="checkbox" id="chk-startup">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <span>Dark Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="chk-theme">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="btn-about" class="btn-secondary">About</button>
+                        <button id="btn-quit" class="btn-danger">Quit App</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="add-url-section card">
+            <div class="input-group" style="flex-wrap: wrap;">
+                <input type="text" id="nameInput" placeholder="Name (Optional)" style="width: 140px; flex-grow: 0;" />
+                <input type="text" id="urlInput" placeholder="https://example.com" style="flex-grow: 1;" />
+                <button id="addBtn">Add</button>
+            </div>
+
+            <div class="resolution-inputs">
+                <select id="resolutionSelect">
+                    <option value="custom">Custom Size</option>
+                    <option value="360x640">360 x 640 (Mobile)</option>
+                    <option value="480x720" selected>480 x 720 (Vertical)</option>
+                    <option value="720x1280">720 x 1280 (HD Vertical)</option>
+                    <option value="1280x720">1280 x 720 (HD Landscape)</option>
+                    <option value="1920x1080">1920 x 1080 (FHD)</option>
+                </select>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <input type="number" id="widthInput" placeholder="W" value="480" />
+                    <span class="res-x">in</span>
+                    <input type="number" id="heightInput" placeholder="H" value="720" />
+                </div>
+            </div>
+        </div>
+
+        <ul id="urlList">
+            <!-- List items will be injected here -->
+        </ul>
+    </div>
+    <script src="renderer.js"></script>
+</body>
+
+</html>

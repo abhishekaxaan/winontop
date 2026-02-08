@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        /* Invert Filter Logic */
+        .invert-colors {
+            filter: invert(1) hue-rotate(180deg);
+        }
+
+        #drag-handle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 32px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            cursor: move;
+            z-index: 9999;
+            opacity: 1;
+            /* Visible by default */
+            transition: opacity 0.3s ease-in-out;
+            -webkit-app-region: drag;
+            padding-right: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Hide handle when mouse leaves window */
+        body.hover-inactive #drag-handle {
+            opacity: 0;
+        }
+
+        /* Always show when active/dragging */
+        #drag-handle.active {
+            opacity: 1;
+        }
+
+        #controls {
+            display: flex;
+            gap: 8px;
+            -webkit-app-region: no-drag;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+            transition: background 0.2s;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .control-btn.active {
+            background: rgba(37, 99, 235, 0.6);
+            /* Blue accent */
+            border-color: rgba(37, 99, 235, 0.8);
+        }
+
+        #webview-container {
+            width: 100%;
+            height: 100%;
+            /* Padding top to not hide content behind handle? */
+            /* Or handle overlays content? Prompt says "borderless". */
+            /* Usually handle is over content. */
+        }
+
+        webview {
+            width: 100%;
+            height: 100%;
+        }
+
+        .control-select {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            outline: none;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .control-select:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .control-select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        /* Visual indicator for grip */
+        #resize-grip::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            border-right: 2px solid rgba(255, 255, 255, 0.5);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="drag-handle">
+        <span
+            style="flex-grow: 1; padding-left: 10px; font-family: 'Segoe UI', sans-serif; font-size: 12px; opacity: 0.8; font-weight: 600; text-shadow: 0 1px 2px black;">WinOnTop</span>
+        <div id="controls">
+            <!-- Invert Colors -->
+            <button id="toggle-invert" class="control-btn" title="Invert Colors / Dark Mode">◑</button>
+            <!-- Click-through toggle -->
+            <button id="toggle-clickthrough" class="control-btn" title="Toggle Click-Through">CT: OFF</button>
+            <button id="close-btn" class="control-btn"
+                style="background: rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.6);"
+                title="Close Overlay">✕</button>
+        </div>
+    </div>
+    <div id="webview-container">
+        <!-- Webview injected via JS or static? -->
+        <!-- Static webview tag needs src. We get src from query params. -->
+    </div>
+    <script src="overlay.js"></script>
+</body>
+
+</html>

@@ -1,6 +1,6 @@
 
-$iconUrl = "https://cdn-icons-png.flaticon.com/512/25/25694.png" # Simple Pin Icon
-$pngPath = "$PSScriptRoot\resources\icon.png"
+$iconUrl = "https://cdn-icons-png.flaticon.com/512/3524/3524335.png" # Layers/Window Icon
+$pngPath = "$PSScriptRoot\resources\logo.png"
 $icoPath = "$PSScriptRoot\resources\icon.ico"
 
 # Create resources dir if not exists
@@ -52,4 +52,4 @@ $img.Dispose()
 $ms.Dispose()
 $bw.Dispose()
 
-Write-Host "Created icon.ico successfully!"
+Write-Host "Created icon.ico from logo.png successfully!"

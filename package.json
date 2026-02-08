@@ -29,7 +29,8 @@
     },
     "win": {
       "target": [
-        "nsis"
+        "nsis",
+        "portable"
       ],
       "icon": "resources/icon.ico"
     },
@@ -38,7 +39,19 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
-    }
+    },
+    "files": [
+      "**/*",
+      "!**/*.ts",
+      "!*.ps1",
+      "!*.md",
+      "!src/test_*.js",
+      "!src/ui_test*.html",
+      "!generate_icon.ps1",
+      "!test_mock.js",
+      "!.gitignore",
+      "!.git"
+    ]
   },
   "devDependencies": {
     "electron": "^40.2.1",

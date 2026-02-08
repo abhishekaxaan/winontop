@@ -1,8 +1,7 @@
 const { ipcRenderer } = require('electron');
 
 const urlInput = document.getElementById('urlInput');
-const nameInput = document.getElementById('nameInput'); // New Input
-const resolutionSelect = document.getElementById('resolutionSelect');
+const nameInput = document.getElementById('nameInput');
 const widthInput = document.getElementById('widthInput');
 const heightInput = document.getElementById('heightInput');
 const addBtn = document.getElementById('addBtn');
@@ -99,15 +98,6 @@ btnAbout.addEventListener('click', () => {
     alert('WinOnTop v1.0.0\nFOSS Overlay Utility');
 });
 
-// Resolution Presets
-resolutionSelect.addEventListener('change', () => {
-    const val = resolutionSelect.value;
-    if (val === 'custom') return;
-    const [w, h] = val.split('x');
-    widthInput.value = w;
-    heightInput.value = h;
-});
-
 // Load URLs on start
 async function loadUrls() {
     const urls = await ipcRenderer.invoke('get-urls');
@@ -173,56 +163,56 @@ function renderList(urls) {
     });
 }
 
-addBtn.addEventListener('click', async () => {
+// Global function called from HTML onclick
+window.addUrl = async () => {
+    console.log('Add URL function called');
     const url = urlInput.value.trim();
-    if (!url) return alert('Please enter a URL');
+    if (!url) {
+        console.error('No URL entered');
+        return alert('Please enter a URL');
+    }
 
     const name = nameInput.value.trim();
-    const selectedRes = resolutionSelect.value;
+    const widthInput = document.getElementById('widthInput');
+    const heightInput = document.getElementById('heightInput');
 
-    const resolutionPresets = {
-        '480p': { width: 854, height: 480 },
-        '720p': { width: 1280, height: 720 },
-        '1080p': { width: 1920, height: 1080 },
-        '1440p': { width: 2560, height: 1440 },
-        'square': { width: 1080, height: 1080 },
-        'portrait': { width: 1080, height: 1920 }
-    };
+    const width = parseInt(widthInput.value);
+    const height = parseInt(heightInput.value);
 
-    let width, height;
+    console.log('Inputs:', { url, name, width, height });
 
-    if (selectedRes === 'custom') {
-        const customWidth = prompt('Enter width:', '1920');
-        if (!customWidth || isNaN(customWidth)) return;
-        const customHeight = prompt('Enter height:', '1080');
-        if (!customHeight || isNaN(customHeight)) return;
-        width = parseInt(customWidth);
-        height = parseInt(customHeight);
-    } else {
-        const preset = resolutionPresets[selectedRes];
-        width = preset.width;
-        height = preset.height;
+    if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+        return alert('Please enter valid width and height values');
     }
 
     // URL Normalization: Ensure http/https
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url;
+    let finalUrl = url;
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+        finalUrl = 'https://' + finalUrl;
     }
 
     const newItem = {
         id: Date.now().toString(),
-        url,
+        url: finalUrl,
         name,
         width,
         height
     };
 
-    const updatedUrls = await ipcRenderer.invoke('add-url', newItem);
-    renderList(updatedUrls);
-    urlInput.value = '';
-    nameInput.value = '';
-    resolutionSelect.value = '1080p';
-});
+    console.log('Invoking add-url:', newItem);
+
+    try {
+        const updatedUrls = await ipcRenderer.invoke('add-url', newItem);
+        renderList(updatedUrls);
+        urlInput.value = '';
+        nameInput.value = '';
+        widthInput.value = '480';
+        heightInput.value = '720';
+    } catch (err) {
+        console.error('Failed to add URL:', err);
+        alert('Failed to add URL: ' + err.message);
+    }
+};
 
 window.openOverlay = (id) => {
     ipcRenderer.invoke('open-overlay', id);

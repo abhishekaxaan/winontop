@@ -40,6 +40,10 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
     },
+    "portable": {
+      "artifactName": "WinOnTop Portable 0.5.0.exe",
+      "splashImage": "resources/icon.png"
+    },
     "files": [
       "**/*",
       "!**/*.ts",

@@ -96,21 +96,13 @@
             <div class="input-group" style="flex-wrap: wrap;">
                 <input type="text" id="nameInput" placeholder="Name (Optional)" style="width: 140px; flex-grow: 0;" />
                 <input type="text" id="urlInput" placeholder="https://example.com" style="flex-grow: 1;" />
-                <button id="addBtn">Add</button>
+                <button id="addBtn" onclick="addUrl()">Add</button>
             </div>
 
             <div class="resolution-inputs">
-                <select id="resolutionSelect">
-                    <option value="custom">Custom Size</option>
-                    <option value="360x640">360 x 640 (Mobile)</option>
-                    <option value="480x720" selected>480 x 720 (Vertical)</option>
-                    <option value="720x1280">720 x 1280 (HD Vertical)</option>
-                    <option value="1280x720">1280 x 720 (HD Landscape)</option>
-                    <option value="1920x1080">1920 x 1080 (FHD)</option>
-                </select>
                 <div style="display: flex; align-items: center; gap: 4px;">
                     <input type="number" id="widthInput" placeholder="W" value="480" />
-                    <span class="res-x">in</span>
+                    <span class="res-x">x</span>
                     <input type="number" id="heightInput" placeholder="H" value="720" />
                 </div>
             </div>

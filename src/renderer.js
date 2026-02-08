@@ -204,8 +204,10 @@ addBtn.addEventListener('click', async () => {
         height = preset.height;
     }
 
-    // Basic validation
-    if (!url.startsWith('http')) return alert('URL must start with http/https');
+    // URL Normalization: Ensure http/https
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+    }
 
     const newItem = {
         id: Date.now().toString(),

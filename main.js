@@ -22,7 +22,7 @@ function createMainWindow() {
             nodeIntegration: true,
             contextIsolation: false
         },
-        icon: path.join(__dirname, 'assets/icon.png'), // Placeholder
+        icon: path.join(__dirname, 'resources/icon.ico'),
         title: 'WinOnTop',
         autoHideMenuBar: true,
         show: false, // Wait for ready-to-show
@@ -88,150 +88,165 @@ function createOverlayWindow(urlItem) {
 }
 
 function createTray() {
-    tray = new Tray(path.join(__dirname, 'assets/icon.png')); // We need an icon. I'll stick to text or default if missing.
-    // If icon is missing/invalid, it might crash or show empty. I'll ensure I generate one or handle it.
+    try {
+        const iconPath = path.join(__dirname, 'resources/icon.ico');
+        tray = new Tray(iconPath);
 
-    const contextMenu = Menu.buildFromTemplate([
-        { label: 'Open App', click: () => mainWindow.show() },
-        {
-            label: 'Quit', click: () => {
-                app.isQuitting = true;
-                app.quit();
+        const contextMenu = Menu.buildFromTemplate([
+            { label: 'Open App', click: () => mainWindow.show() },
+            {
+                label: 'Quit', click: () => {
+                    app.isQuitting = true;
+                    app.quit();
+                }
             }
-        }
-    ]);
+        ]);
 
-    tray.setToolTip('WinOnTop');
-    tray.setContextMenu(contextMenu);
+        tray.setToolTip('WinOnTop');
+        tray.setContextMenu(contextMenu);
 
-    tray.on('click', () => {
-        mainWindow.show();
-    });
+        tray.on('click', () => {
+            mainWindow.show();
+        });
+    } catch (err) {
+        console.error('Failed to create tray icon:', err);
+    }
 }
 
 
-app.whenReady().then(() => {
-    // Generate a dummy icon if it doesn't exist? Or just rely on system default. 
-    // Electron might need an icon for Tray. 
-    // I will skip tray icon creation for now or use a simple colored box if I had image tools, 
-    // but I'll assume usage of a default or I'll create one later.
-    // For now, let's just try to init tray. If it fails, I'll fix it.
+// Single Instance Lock
+const gotTheLock = app.requestSingleInstanceLock();
 
-    createMainWindow();
-    // createTray(); // Delay tray creation until I have an icon, or handle error. 
-    // Actually, Prompt says "App lives in system tray". I MUST implement it.
-    // I'll create a simple empty file for icon or use generated one later.
-
-    // IPC Handlers
-    ipcMain.handle('get-urls', () => {
-        console.log('IPC: get-urls called');
-        return storage.getUrls();
-    });
-
-    ipcMain.handle('add-url', (event, urlItem) => {
-        console.log('IPC: add-url', urlItem);
-        storage.addUrl(urlItem);
-        return storage.getUrls();
-    });
-
-    ipcMain.handle('delete-url', (event, id) => {
-        console.log('IPC: delete-url', id);
-        storage.removeUrl(id);
-        return storage.getUrls();
-    });
-
-    ipcMain.handle('update-url-size', (event, id, width, height) => {
-        console.log('IPC: update-url-size', id, width, height);
-        const urls = storage.getUrls();
-        const item = urls.find(u => u.id === id);
-        if (item) {
-            item.width = width;
-            item.height = height;
-            storage.set('urls', urls);
-        }
-        return storage.getUrls();
-    });
-
-    ipcMain.handle('open-overlay', (event, id) => {
-        console.log('IPC: open-overlay', id);
-        const item = storage.getUrls().find(u => u.id === id);
-        if (item) {
-            const overlayWin = createOverlayWindow(item);
-
-            // Mouse Polling for Auto-Hide Reliability
-            // Webviews eat mouse events, so we poll mouse position from main process
-            const pollInterval = setInterval(() => {
-                if (!overlayWin || overlayWin.isDestroyed()) {
-                    clearInterval(pollInterval);
-                    return;
-                }
-
-                const point = screen.getCursorScreenPoint();
-                const bounds = overlayWin.getBounds();
-
-                // Electron's getCursorScreenPoint returns DIPs on Windows (usually).
-                // getBounds also returns DIPs.
-                // However, let's ensure we are robust.
-                // A buffer of 1px might help with edge cases.
-
-                const isInside =
-                    point.x >= bounds.x &&
-                    point.x < bounds.x + bounds.width &&
-                    point.y >= bounds.y &&
-                    point.y < bounds.y + bounds.height;
-
-                // Send status to renderer
-                // Only send if state CHANGED to avoid flooding renderer?
-                // Renderer receiving same boolean is fine, but optimization:
-                // We don't have previous state here easily without wider scope.
-                // Let's just send it.
-                if (!overlayWin.isDestroyed()) {
-                    // console.log(`Polling ${id}: inside=${isInside}`); // Debug
-                    overlayWin.webContents.send('overlay-hover-update', isInside);
-                }
-
-            }, 1000); // Check every 1000ms (1 second)
-
-            overlayWin.on('closed', () => clearInterval(pollInterval));
+if (!gotTheLock) {
+    app.quit();
+} else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        // Someone tried to run a second instance, we should focus our window.
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.show();
+            mainWindow.focus();
         }
     });
 
-    ipcMain.on('overlay-ignore-mouse', (event, shouldIgnore, windowId) => {
-        // Find the window. windowId is sent from renderer.
-        // Wait, I need to know WHICH window.
-        // The sender webContents can help.
-        const win = BrowserWindow.fromWebContents(event.sender);
-        if (win) {
-            win.setIgnoreMouseEvents(shouldIgnore, { forward: true });
-        }
-    });
+    app.whenReady().then(() => {
+        createTray();
+        createMainWindow();
+        // createTray(); // Delay tray creation until I have an icon, or handle error. 
+        // Actually, Prompt says "App lives in system tray". I MUST implement it.
+        // I'll create a simple empty file for icon or use generated one later.
 
-    ipcMain.handle('app-quit', () => {
-        app.isQuitting = true;
-        app.quit();
-    });
-
-    ipcMain.handle('get-startup', () => {
-        return app.getLoginItemSettings().openAtLogin;
-    });
-
-    ipcMain.handle('toggle-startup', (event, enable) => {
-        app.setLoginItemSettings({
-            openAtLogin: enable,
-            path: app.getPath('exe')
+        // IPC Handlers
+        ipcMain.handle('get-urls', () => {
+            console.log('IPC: get-urls called');
+            return storage.getUrls();
         });
-        return app.getLoginItemSettings().openAtLogin;
+
+        ipcMain.handle('add-url', (event, urlItem) => {
+            console.log('IPC: add-url', urlItem);
+            storage.addUrl(urlItem);
+            return storage.getUrls();
+        });
+
+        ipcMain.handle('delete-url', (event, id) => {
+            console.log('IPC: delete-url', id);
+            storage.removeUrl(id);
+            return storage.getUrls();
+        });
+
+        ipcMain.handle('update-url-size', (event, id, width, height) => {
+            console.log('IPC: update-url-size', id, width, height);
+            const urls = storage.getUrls();
+            const item = urls.find(u => u.id === id);
+            if (item) {
+                item.width = width;
+                item.height = height;
+                storage.set('urls', urls);
+            }
+            return storage.getUrls();
+        });
+
+        ipcMain.handle('open-overlay', (event, id) => {
+            console.log('IPC: open-overlay', id);
+            const item = storage.getUrls().find(u => u.id === id);
+            if (item) {
+                const overlayWin = createOverlayWindow(item);
+
+                // Mouse Polling for Auto-Hide Reliability
+                // Webviews eat mouse events, so we poll mouse position from main process
+                const pollInterval = setInterval(() => {
+                    if (!overlayWin || overlayWin.isDestroyed()) {
+                        clearInterval(pollInterval);
+                        return;
+                    }
+
+                    const point = screen.getCursorScreenPoint();
+                    const bounds = overlayWin.getBounds();
+
+                    // Electron's getCursorScreenPoint returns DIPs on Windows (usually).
+                    // getBounds also returns DIPs.
+                    // However, let's ensure we are robust.
+                    // A buffer of 1px might help with edge cases.
+
+                    const isInside =
+                        point.x >= bounds.x &&
+                        point.x < bounds.x + bounds.width &&
+                        point.y >= bounds.y &&
+                        point.y < bounds.y + bounds.height;
+
+                    // Send status to renderer
+                    // Only send if state CHANGED to avoid flooding renderer?
+                    // Renderer receiving same boolean is fine, but optimization:
+                    // We don't have previous state here easily without wider scope.
+                    // Let's just send it.
+                    if (!overlayWin.isDestroyed()) {
+                        // console.log(`Polling ${id}: inside=${isInside}`); // Debug
+                        overlayWin.webContents.send('overlay-hover-update', isInside);
+                    }
+
+                }, 1000); // Check every 1000ms (1 second)
+
+                overlayWin.on('closed', () => clearInterval(pollInterval));
+            }
+        });
+
+        ipcMain.on('overlay-ignore-mouse', (event, shouldIgnore, windowId) => {
+            // Find the window. windowId is sent from renderer.
+            // Wait, I need to know WHICH window.
+            // The sender webContents can help.
+            const win = BrowserWindow.fromWebContents(event.sender);
+            if (win) {
+                win.setIgnoreMouseEvents(shouldIgnore, { forward: true });
+            }
+        });
+
+        ipcMain.handle('app-quit', () => {
+            app.isQuitting = true;
+            app.quit();
+        });
+
+        ipcMain.handle('get-startup', () => {
+            return app.getLoginItemSettings().openAtLogin;
+        });
+
+        ipcMain.handle('toggle-startup', (event, enable) => {
+            app.setLoginItemSettings({
+                openAtLogin: enable,
+                path: app.getPath('exe')
+            });
+            return app.getLoginItemSettings().openAtLogin;
+        });
+
+        app.on('activate', () => {
+            if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+        });
     });
 
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    app.on('window-all-closed', () => {
+        if (process.platform !== 'darwin') {
+            // Do not quit, keep tray active?
+            // Prompt says "Closing main window... minimizes to system tray".
+            // "Quit App" in tray quits.
+        }
     });
-});
-
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        // Do not quit, keep tray active?
-        // Prompt says "Closing main window... minimizes to system tray".
-        // "Quit App" in tray quits.
-    }
-});
+}

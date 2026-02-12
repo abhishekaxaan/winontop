@@ -70,6 +70,10 @@ function createOverlayWindow(urlItem) {
         skipTaskbar: true
     });
 
+    // Elevate priority to stay on top of full-screen games/apps
+    overlay.setAlwaysOnTop(true, 'screen-saver', 1);
+    overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
     // Load overlay HTML
     overlay.loadFile('src/overlay.html', { query: { id: urlItem.id, url: urlItem.url } });
 

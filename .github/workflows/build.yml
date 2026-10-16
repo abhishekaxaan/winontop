@@ -85,8 +85,13 @@ jobs:
           ls -la dist
           ls dist/*.deb >/dev/null 2>&1 || { echo "ERROR: .deb package was not produced"; exit 1; }
           deb="$(ls dist/*.deb | head -n1)"
-          dpkg-deb -c "$deb" | grep -q '/usr/share/icons/hicolor/.*/apps/.*\.png' || { echo "ERROR: PNG icon missing from deb"; exit 1; }
-          dpkg-deb -c "$deb" | grep -q '\.desktop' || { echo "ERROR: .desktop entry missing from deb"; exit 1; }
+          # Write the listing to a file: piping into `grep -q` closes the pipe
+          # early and, with pipefail, makes dpkg-deb fail with a SIGPIPE.
+          dpkg-deb -c "$deb" > deb-contents.txt
+          grep -E '/usr/share/icons/hicolor/.*/apps/.*\.png' deb-contents.txt \
+            || { echo "ERROR: PNG icon missing from deb"; exit 1; }
+          grep -E '\.desktop' deb-contents.txt \
+            || { echo "ERROR: .desktop entry missing from deb"; exit 1; }
           echo "Linux deb verified OK: $deb"
 
       - name: Upload Linux package

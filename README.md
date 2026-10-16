@@ -18,9 +18,19 @@ Display websites in always-on-top transparent overlay windows. Perfect for keepi
 ## Installation
 
 ### From Release (Recommended)
-1. Download the latest `.exe` installer from the [Releases](https://github.com/abhishekaxaan/winontop/releases) page
+
+**Windows**
+1. Download the latest `WinOnTop Setup x.y.z.exe` installer (or the `WinOnTop Portable x.y.z.exe`) from the [Releases](https://github.com/abhishekaxaan/winontop/releases) page
 2. Run the installer
 3. Launch WinOnTop from your Start Menu or Desktop
+
+**Linux (Debian / Ubuntu)**
+1. Download the latest `.deb` package from the [Releases](https://github.com/abhishekaxaan/winontop/releases) page
+2. Install it:
+```bash
+sudo apt install ./winontop_0.5.0_amd64.deb
+```
+3. Launch WinOnTop from your application menu, or run `winontop` in a terminal
 
 ### From Source
 ```bash
@@ -48,21 +58,29 @@ npm start
 ## Building from Source
 
 ```bash
-# Build Windows installer
+# Build Windows installer (NSIS) and portable
 npm run build
 
-# Build without installer (portable)
+# Build Windows portable only (no installer)
 npm run build:dir
+
+# Build Linux .deb package
+npm run build:linux
 ```
 
-The built application will be in the `dist` folder.
+The built packages will be in the `dist` folder.
+
+Releases are produced automatically by GitHub Actions
+([`.github/workflows/build.yml`](.github/workflows/build.yml)): pushing a tag
+such as `v0.5.0` builds the Windows installer, Windows portable, and Linux
+`.deb`, verifies them, and publishes them to a GitHub Release.
 
 ## Tech Stack
 
 - **Electron** - Cross-platform desktop framework
 - **Vanilla JavaScript** - No frameworks, pure JS
 - **HTML/CSS** - Modern, responsive UI
-- **electron-store** - Persistent data storage
+- **Custom JSON storage** - Persistent data storage via `src/storage.js`
 
 ## License
 
@@ -87,3 +105,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Auto-hide header functionality
 - Light/Dark theme support
 - Persistent link storage
+- Linux `.deb` package and Windows installer/portable builds

@@ -14,6 +14,12 @@ let mainWindow;
 let tray = null;
 const overlays = new Map(); // Store overlay windows by ID
 
+// Electron requires a PNG icon on Linux; .ico is Windows-only.
+const ICON_PATH = path.join(
+    __dirname,
+    process.platform === 'linux' ? 'resources/icon.png' : 'resources/icon.ico'
+);
+
 function createMainWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
@@ -22,7 +28,7 @@ function createMainWindow() {
             nodeIntegration: true,
             contextIsolation: false
         },
-        icon: path.join(__dirname, 'resources/icon.ico'),
+        icon: ICON_PATH,
         title: 'WinOnTop',
         autoHideMenuBar: true,
         show: false, // Wait for ready-to-show
@@ -93,8 +99,7 @@ function createOverlayWindow(urlItem) {
 
 function createTray() {
     try {
-        const iconPath = path.join(__dirname, 'resources/icon.ico');
-        tray = new Tray(iconPath);
+        tray = new Tray(ICON_PATH);
 
         const contextMenu = Menu.buildFromTemplate([
             { label: 'Open App', click: () => mainWindow.show() },

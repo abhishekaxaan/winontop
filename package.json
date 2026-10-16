@@ -6,7 +6,9 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win",
-    "build:dir": "electron-builder --win --dir"
+    "build:dir": "electron-builder --win --dir",
+    "build:linux": "electron-builder --linux deb",
+    "build:win": "electron-builder --win"
   },
   "keywords": [
     "overlay",
@@ -33,6 +35,15 @@
         "portable"
       ],
       "icon": "resources/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "deb"
+      ],
+      "icon": "resources/icon.png",
+      "category": "Utility",
+      "maintainer": "Abhishek Saxena <abhishekaxaan@users.noreply.github.com>",
+      "synopsis": "Display websites in always-on-top transparent overlay windows"
     },
     "nsis": {
       "oneClick": false,
